@@ -1,0 +1,90 @@
+import { app, BrowserWindow, shell, Tray, Menu, nativeImage } from 'electron'
+import path from 'path'
+import { registerIpcHandlers } from './ipc-handlers'
+import { startTracker, stopTracker } from './tracker'
+import { initFocusModule } from './focus-session'
+import { startWaterReminder, stopWaterReminder } from './water-reminder'
+import { createOverlayWindow } from './overlay'
+import { getAppIcon, getTrayIcon } from './appicon'
+
+// Must be set before app is ready — makes Windows show "Kronos" in notifications
+// and the taskbar instead of "Electron"
+app.name = 'Kronos'
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.kronos.screentimetracker')
+}
+
+// Remove the default File/Edit/View/Window/Help menu bar
+Menu.setApplicationMenu(null)
+
+let mainWindow: BrowserWindow | null = null
+let tray: Tray | null = null
+
+function createWindow() {
+  mainWindow = new BrowserWindow({
+    width: 1100,
+    height: 720,
+    minWidth: 800,
+    minHeight: 600,
+    title: 'Kronos',
+    icon: getAppIcon(),
+    frame: true,
+    webPreferences: {
+      preload: path.join(__dirname, '../preload/index.js'),
+      contextIsolation: true,
+      nodeIntegration: false
+    }
+  })
+
+  if (process.env['ELECTRON_RENDERER_URL']) {
+    mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
+  } else {
+    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'))
+  }
+
+  mainWindow.on('close', (e) => {
+    e.preventDefault()
+    mainWindow?.hide()
+  })
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url)
+    return { action: 'deny' }
+  })
+}
+
+function createTray() {
+  tray = new Tray(getTrayIcon())
+  const menu = Menu.buildFromTemplate([
+    { label: 'Open Kronos', click: () => mainWindow?.show() },
+    { type: 'separator' },
+    { label: 'Quit', click: () => app.quit() }
+  ])
+  tray.setToolTip('Kronos — Screen Time Tracker')
+  tray.setContextMenu(menu)
+  tray.on('click', () => mainWindow?.show())
+}
+
+app.whenReady().then(() => {
+  registerIpcHandlers()
+  initFocusModule()
+  startWaterReminder()
+  startTracker()
+  createWindow()
+  createTray()
+  createOverlayWindow()
+})
+
+app.on('before-quit', () => {
+  stopTracker()
+  stopWaterReminder()
+})
+
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') return
+  app.quit()
+})
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) createWindow()
+})

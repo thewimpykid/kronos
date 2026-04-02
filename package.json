@@ -1,0 +1,39 @@
+{
+  "name": "kronos",
+  "productName": "Kronos",
+  "version": "1.0.0",
+  "description": "Local-first screen time tracker for Windows. Tracks apps and websites, blocks distractions during focus sessions, and never sends your data anywhere.",
+  "author": {
+    "name": "Kronos"
+  },
+  "main": "out/main/index.js",
+  "scripts": {
+    "predev": "node scripts/generate-icons.mjs",
+    "dev": "electron-vite dev",
+    "prebuild": "node scripts/generate-icons.mjs",
+    "build": "electron-vite build",
+    "dist": "npm run build && electron-builder",
+    "rebuild": "node node_modules/@electron/rebuild/lib/cli.js -f -w better-sqlite3",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "recharts": "^2.12.2"
+  },
+  "devDependencies": {
+    "@electron/rebuild": "^3.6.0",
+    "@electron-toolkit/tsconfig": "^2.0.0",
+    "@types/better-sqlite3": "^7.6.8",
+    "@types/node": "^20.11.5",
+    "@types/react": "^18.2.48",
+    "@types/react-dom": "^18.2.18",
+    "@vitejs/plugin-react": "^4.2.1",
+    "electron": "^29.0.1",
+    "electron-builder": "^24.9.1",
+    "electron-vite": "^2.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.12"
+  }
+}

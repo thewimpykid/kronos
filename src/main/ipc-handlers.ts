@@ -1,0 +1,90 @@
+import { ipcMain } from 'electron'
+import {
+  deleteLimit,
+  getAppHourlyToday,
+  getAppStatsForRange,
+  getLimits,
+  getTodayGlasses,
+  getTodayTotalFor,
+  getTrackedAppsToday,
+  getTrackedSitesToday,
+  getWebStatsForRange,
+  logGlass,
+  todayStart,
+  upsertLimit
+} from './db'
+import { getFocusSession, startFocusSession, endFocusSession } from './focus-session'
+import { getWaterSettings, setWaterSettings } from './water-reminder'
+
+export function registerIpcHandlers() {
+  // Today's stats
+  ipcMain.handle('get-stats-today', () => {
+    const start = todayStart()
+    const end = Date.now()
+    return {
+      apps: getAppStatsForRange(start, end),
+      websites: getWebStatsForRange(start, end),
+      hourly: getAppHourlyToday()
+    }
+  })
+
+  // Range stats (for weekly view, etc.)
+  ipcMain.handle('get-stats-range', (_e, startMs: number, endMs: number) => {
+    return {
+      apps: getAppStatsForRange(startMs, endMs),
+      websites: getWebStatsForRange(startMs, endMs)
+    }
+  })
+
+  // Limits
+  ipcMain.handle('get-limits', () => {
+    const limits = getLimits()
+    // Attach today's usage to each limit
+    return limits.map((l) => ({
+      ...l,
+      used_today_ms: getTodayTotalFor(l.target, l.target_type)
+    }))
+  })
+
+  ipcMain.handle(
+    'upsert-limit',
+    (_e, target: string, targetType: string, dailyLimitMs: number) => {
+      upsertLimit(target, targetType, dailyLimitMs)
+    }
+  )
+
+  ipcMain.handle('delete-limit', (_e, id: number) => {
+    deleteLimit(id)
+  })
+
+  // Focus session handlers
+  ipcMain.handle('get-focus-session', () => {
+    const s = getFocusSession()
+    if (!s) return null
+    return { ...s, remainingMs: Math.max(0, s.endTime - Date.now()) }
+  })
+
+  ipcMain.handle('start-focus-session', (_e, label: string, durationMs: number, blockedApps: string[], blockedSites: string[]) => {
+    startFocusSession(label, durationMs, blockedApps, blockedSites)
+  })
+
+  ipcMain.handle('end-focus-session', () => {
+    endFocusSession()
+  })
+
+  // Water reminder handlers
+  ipcMain.handle('get-water-settings', () => getWaterSettings())
+  ipcMain.handle('set-water-settings', (_e, enabled: boolean, intervalMs: number) => {
+    setWaterSettings(enabled, intervalMs)
+  })
+
+  // Water log
+  ipcMain.handle('log-glass', () => logGlass())
+  ipcMain.handle('get-today-glasses', () => getTodayGlasses())
+
+  // Tracked today (for quick-add limits)
+  ipcMain.handle('get-tracked-today', () => ({
+    apps: getTrackedAppsToday(),
+    sites: getTrackedSitesToday()
+  }))
+}
