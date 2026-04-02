@@ -179,16 +179,36 @@ export interface HourBucket {
 export function getAppHourlyToday(): HourBucket[] {
   const db = getDb()
   const dayStart = todayStart()
-  return db
+  const now = Date.now()
+
+  const sessions = db
     .prepare(
-      `SELECT CAST((start_time - ?) / 3600000 AS INTEGER) AS hour,
-              SUM(COALESCE(duration_ms, ? - start_time)) AS total_ms
+      `SELECT start_time, COALESCE(duration_ms, ? - start_time) AS duration_ms
        FROM app_sessions
-       WHERE start_time >= ?
-       GROUP BY hour
-       ORDER BY hour`
+       WHERE start_time >= ?`
     )
-    .all(dayStart, Date.now(), dayStart) as HourBucket[]
+    .all(now, dayStart) as { start_time: number; duration_ms: number }[]
+
+  const buckets = new Array(24).fill(0)
+
+  for (const session of sessions) {
+    let remaining = session.duration_ms
+    let pos = session.start_time
+
+    while (remaining > 0) {
+      const hour = Math.floor((pos - dayStart) / 3600000)
+      if (hour >= 24) break
+      const hourEnd = dayStart + (hour + 1) * 3600000
+      const contrib = Math.min(remaining, hourEnd - pos)
+      buckets[hour] += contrib
+      remaining -= contrib
+      pos = hourEnd
+    }
+  }
+
+  return buckets
+    .map((total_ms, hour) => ({ hour, total_ms }))
+    .filter((b) => b.total_ms > 0)
 }
 
 // ── Limits ────────────────────────────────────────────────────
