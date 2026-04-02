@@ -66,7 +66,7 @@ If you already have Visual Studio (any edition) with the C++ workload, you're se
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/kronos.git
+git clone https://github.com/thewimpykid/kronos.git
 cd kronos
 ```
 
