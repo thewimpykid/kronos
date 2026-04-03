@@ -188,25 +188,34 @@ export function getAppHourlyToday(): HourBucket[] {
 
   const sessions = db
     .prepare(
-      `SELECT start_time, COALESCE(duration_ms, ? - start_time) AS duration_ms
+      `SELECT start_time, COALESCE(end_time, ?) AS end_time
        FROM app_sessions
-       WHERE start_time >= ?`
+       WHERE start_time >= ?
+       ORDER BY start_time`
     )
-    .all(now, dayStart) as { start_time: number; duration_ms: number }[]
+    .all(now, dayStart) as { start_time: number; end_time: number }[]
+
+  // Merge overlapping intervals so parallel sessions don't inflate counts beyond 60min/hour
+  const merged: { start: number; end: number }[] = []
+  for (const s of sessions) {
+    const end = Math.min(s.end_time, now)
+    if (merged.length === 0 || s.start_time > merged[merged.length - 1].end) {
+      merged.push({ start: s.start_time, end })
+    } else {
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, end)
+    }
+  }
 
   const buckets = new Array(24).fill(0)
 
-  for (const session of sessions) {
-    let remaining = session.duration_ms
-    let pos = session.start_time
-
-    while (remaining > 0) {
+  for (const interval of merged) {
+    let pos = interval.start
+    while (pos < interval.end) {
       const hour = Math.floor((pos - dayStart) / 3600000)
       if (hour >= 24) break
       const hourEnd = dayStart + (hour + 1) * 3600000
-      const contrib = Math.min(remaining, hourEnd - pos)
+      const contrib = Math.min(interval.end, hourEnd) - pos
       buckets[hour] += contrib
-      remaining -= contrib
       pos = hourEnd
     }
   }
