@@ -30,6 +30,12 @@ export interface WaterSettings {
   nextAt: number
 }
 
+export interface EyeSettings {
+  enabled: boolean
+  intervalMs: number
+  nextAt: number
+}
+
 export interface TrackedToday {
   apps:  { process_name: string; total_ms: number }[]
   sites: { domain: string; total_ms: number }[]
@@ -50,6 +56,10 @@ declare global {
       setWaterSettings:   (enabled: boolean, intervalMs: number) => Promise<void>
       logGlass:           () => Promise<void>
       getTodayGlasses:    () => Promise<number[]>
+      getEyeSettings:     () => Promise<EyeSettings>
+      setEyeSettings:     (enabled: boolean, intervalMs: number) => Promise<void>
+      logEyeBreak:        () => Promise<void>
+      getTodayEyeBreaks:  () => Promise<number[]>
       getTrackedToday:    () => Promise<TrackedToday>
     }
   }

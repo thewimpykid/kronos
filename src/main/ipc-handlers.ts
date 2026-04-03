@@ -5,16 +5,19 @@ import {
   getAppStatsForRange,
   getLimits,
   getTodayGlasses,
+  getTodayEyeBreaks,
   getTodayTotalFor,
   getTrackedAppsToday,
   getTrackedSitesToday,
   getWebStatsForRange,
   logGlass,
+  logEyeBreak,
   todayStart,
   upsertLimit
 } from './db'
 import { getFocusSession, startFocusSession, endFocusSession } from './focus-session'
 import { getWaterSettings, setWaterSettings } from './water-reminder'
+import { getEyeSettings, setEyeSettings } from './eye-reminder'
 
 export function registerIpcHandlers() {
   // Today's stats
@@ -81,6 +84,14 @@ export function registerIpcHandlers() {
   // Water log
   ipcMain.handle('log-glass', () => logGlass())
   ipcMain.handle('get-today-glasses', () => getTodayGlasses())
+
+  // Eye reminder handlers
+  ipcMain.handle('get-eye-settings', () => getEyeSettings())
+  ipcMain.handle('set-eye-settings', (_e, enabled: boolean, intervalMs: number) => {
+    setEyeSettings(enabled, intervalMs)
+  })
+  ipcMain.handle('log-eye-break', () => logEyeBreak())
+  ipcMain.handle('get-today-eye-breaks', () => getTodayEyeBreaks())
 
   // Tracked today (for quick-add limits)
   ipcMain.handle('get-tracked-today', () => ({

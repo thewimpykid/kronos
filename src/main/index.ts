@@ -4,6 +4,7 @@ import { registerIpcHandlers } from './ipc-handlers'
 import { startTracker, stopTracker } from './tracker'
 import { initFocusModule } from './focus-session'
 import { startWaterReminder, stopWaterReminder } from './water-reminder'
+import { startEyeReminder, stopEyeReminder } from './eye-reminder'
 import { createOverlayWindow } from './overlay'
 import { getAppIcon, getTrayIcon } from './appicon'
 
@@ -69,6 +70,7 @@ app.whenReady().then(() => {
   registerIpcHandlers()
   initFocusModule()
   startWaterReminder()
+  startEyeReminder()
   startTracker()
   createWindow()
   createTray()
@@ -78,6 +80,7 @@ app.whenReady().then(() => {
 app.on('before-quit', () => {
   stopTracker()
   stopWaterReminder()
+  stopEyeReminder()
 })
 
 app.on('window-all-closed', () => {

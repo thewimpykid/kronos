@@ -73,6 +73,11 @@ function migrate(db: Database.Database) {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       logged_at INTEGER NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS eye_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      logged_at INTEGER NOT NULL
+    );
   `)
 }
 
@@ -352,6 +357,21 @@ export function getTodayGlasses(): number[] {
   const start = todayStart()
   const rows = db
     .prepare(`SELECT logged_at FROM water_log WHERE logged_at >= ? ORDER BY logged_at`)
+    .all(start) as { logged_at: number }[]
+  return rows.map((r) => r.logged_at)
+}
+
+// ── Eye break log ─────────────────────────────────────────────
+
+export function logEyeBreak(): void {
+  getDb().prepare(`INSERT INTO eye_log (logged_at) VALUES (?)`).run(Date.now())
+}
+
+export function getTodayEyeBreaks(): number[] {
+  const db = getDb()
+  const start = todayStart()
+  const rows = db
+    .prepare(`SELECT logged_at FROM eye_log WHERE logged_at >= ? ORDER BY logged_at`)
     .all(start) as { logged_at: number }[]
   return rows.map((r) => r.logged_at)
 }

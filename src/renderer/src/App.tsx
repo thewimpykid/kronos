@@ -5,9 +5,10 @@ import Timeline from './pages/Timeline'
 import Limits from './pages/Limits'
 import Focus from './pages/Focus'
 import Water from './pages/Water'
+import EyeBreak from './pages/EyeBreak'
 import { api } from './lib/api'
 
-type Page = 'dashboard' | 'websites' | 'timeline' | 'limits' | 'focus' | 'water'
+type Page = 'dashboard' | 'websites' | 'timeline' | 'limits' | 'focus' | 'water' | 'eyebreak'
 
 const NAV: { id: Page; label: string; icon: JSX.Element }[] = [
   {
@@ -29,6 +30,10 @@ const NAV: { id: Page; label: string; icon: JSX.Element }[] = [
   {
     id: 'water', label: 'Hydration',
     icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2C12 2 5 10 5 15a7 7 0 0 0 14 0c0-5-7-13-7-13z" /></svg>
+  },
+  {
+    id: 'eyebreak', label: 'Eye Break',
+    icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><ellipse cx="12" cy="12" rx="10" ry="6.5" /><circle cx="12" cy="12" r="3" /><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" /></svg>
   },
   {
     id: 'limits', label: 'Limits',
@@ -77,6 +82,7 @@ export default function App() {
         {page === 'timeline'  && <Timeline />}
         {page === 'focus'     && <Focus />}
         {page === 'water'     && <Water />}
+        {page === 'eyebreak'  && <EyeBreak />}
         {page === 'limits'    && <Limits />}
       </main>
     </div>

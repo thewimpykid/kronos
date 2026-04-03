@@ -15,5 +15,10 @@ contextBridge.exposeInMainWorld('kronos', {
     ipcRenderer.invoke('set-water-settings', enabled, intervalMs),
   logGlass:          () => ipcRenderer.invoke('log-glass'),
   getTodayGlasses:   () => ipcRenderer.invoke('get-today-glasses'),
+  getEyeSettings:    () => ipcRenderer.invoke('get-eye-settings'),
+  setEyeSettings:    (enabled: boolean, intervalMs: number) =>
+    ipcRenderer.invoke('set-eye-settings', enabled, intervalMs),
+  logEyeBreak:       () => ipcRenderer.invoke('log-eye-break'),
+  getTodayEyeBreaks: () => ipcRenderer.invoke('get-today-eye-breaks'),
   getTrackedToday:   () => ipcRenderer.invoke('get-tracked-today'),
 })
