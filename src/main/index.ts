@@ -15,6 +15,12 @@ if (process.platform === 'win32') {
   app.setAppUserModelId('com.kronos.screentimetracker')
 }
 
+// Enforce single instance — if a second instance launches, focus the first and quit.
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
+  app.quit()
+}
+
 // Remove the default File/Edit/View/Window/Help menu bar
 Menu.setApplicationMenu(null)
 
@@ -65,6 +71,15 @@ function createTray() {
   tray.setContextMenu(menu)
   tray.on('click', () => mainWindow?.show())
 }
+
+// If a second instance tries to launch, bring the existing window to the front
+app.on('second-instance', () => {
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.show()
+    mainWindow.focus()
+  }
+})
 
 app.whenReady().then(() => {
   registerIpcHandlers()
