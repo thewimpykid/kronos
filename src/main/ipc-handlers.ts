@@ -24,10 +24,12 @@ export function registerIpcHandlers() {
   ipcMain.handle('get-stats-today', () => {
     const start = todayStart()
     const end = Date.now()
+    const hourly = getAppHourlyToday()
     return {
       apps: getAppStatsForRange(start, end),
       websites: getWebStatsForRange(start, end),
-      hourly: getAppHourlyToday()
+      hourly,
+      screenTime: hourly.reduce((a, b) => a + b.total_ms, 0)
     }
   })
 

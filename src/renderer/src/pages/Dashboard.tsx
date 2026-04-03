@@ -60,7 +60,7 @@ export default function Dashboard() {
     return () => { cancelled = true; clearInterval(id) }
   }, [])
 
-  const totalAppMs = stats?.apps.reduce((a, b) => a + b.total_ms, 0) ?? 0
+  const totalAppMs = stats?.screenTime ?? 0
   const topApps: AppStat[]    = stats?.apps.slice(0, 8) ?? []
   const topSites: WebStat[]   = stats?.websites.slice(0, 8) ?? []
   const maxAppMs = topApps[0]?.total_ms ?? 1
