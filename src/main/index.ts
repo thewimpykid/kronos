@@ -7,6 +7,7 @@ import { startWaterReminder, stopWaterReminder } from './water-reminder'
 import { startEyeReminder, stopEyeReminder } from './eye-reminder'
 import { createOverlayWindow } from './overlay'
 import { getAppIcon, getTrayIcon } from './appicon'
+import { initAutoUpdater } from './updater'
 
 // Must be set before app is ready — makes Windows show "Kronos" in notifications
 // and the taskbar instead of "Electron"
@@ -84,6 +85,7 @@ app.on('second-instance', () => {
 app.whenReady().then(() => {
   registerIpcHandlers()
   initFocusModule()
+  initAutoUpdater()
   startWaterReminder()
   startEyeReminder()
   startTracker()

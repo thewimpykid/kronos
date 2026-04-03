@@ -24,3 +24,8 @@ nsis:
   createStartMenuShortcut: true
 
 electronVersion: 29.0.1
+
+publish:
+  provider: github
+  owner: thewimpykid
+  repo: kronos

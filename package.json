@@ -18,11 +18,12 @@
   },
   "dependencies": {
     "better-sqlite3": "^9.4.3",
+    "electron-updater": "^6.8.3",
     "recharts": "^2.12.2"
   },
   "devDependencies": {
-    "@electron/rebuild": "^3.6.0",
     "@electron-toolkit/tsconfig": "^2.0.0",
+    "@electron/rebuild": "^3.6.0",
     "@types/better-sqlite3": "^7.6.8",
     "@types/node": "^20.11.5",
     "@types/react": "^18.2.48",
