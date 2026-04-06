@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import {
   deleteLimit,
+  getAppDailyForRange,
   getAppHourlyToday,
   getAppStatsForRange,
   getLimits,
@@ -39,6 +40,13 @@ export function registerIpcHandlers() {
       apps: getAppStatsForRange(startMs, endMs),
       websites: getWebStatsForRange(startMs, endMs)
     }
+  })
+
+  // Weekly timeline — daily buckets for the past 7 days
+  ipcMain.handle('get-weekly-timeline', () => {
+    const end = Date.now()
+    const start = todayStart() - 6 * 86400000
+    return getAppDailyForRange(start, end)
   })
 
   // Limits

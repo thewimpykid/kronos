@@ -3,6 +3,7 @@
 export interface AppStat    { process_name: string; total_ms: number }
 export interface WebStat    { domain: string; total_ms: number }
 export interface HourBucket { hour: number; total_ms: number }
+export interface DayBucket  { dayStart: number; total_ms: number }
 export interface StatsToday { apps: AppStat[]; websites: WebStat[]; hourly: HourBucket[]; screenTime: number }
 export interface StatsRange { apps: AppStat[]; websites: WebStat[] }
 
@@ -61,6 +62,7 @@ declare global {
       logEyeBreak:        () => Promise<void>
       getTodayEyeBreaks:  () => Promise<number[]>
       getTrackedToday:    () => Promise<TrackedToday>
+      getWeeklyTimeline:  () => Promise<DayBucket[]>
     }
   }
 }

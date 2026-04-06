@@ -20,5 +20,6 @@ contextBridge.exposeInMainWorld('kronos', {
     ipcRenderer.invoke('set-eye-settings', enabled, intervalMs),
   logEyeBreak:       () => ipcRenderer.invoke('log-eye-break'),
   getTodayEyeBreaks: () => ipcRenderer.invoke('get-today-eye-breaks'),
-  getTrackedToday:   () => ipcRenderer.invoke('get-tracked-today'),
+  getTrackedToday:      () => ipcRenderer.invoke('get-tracked-today'),
+  getWeeklyTimeline:    () => ipcRenderer.invoke('get-weekly-timeline'),
 })

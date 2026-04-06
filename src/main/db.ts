@@ -181,6 +181,11 @@ export interface HourBucket {
   total_ms: number
 }
 
+export interface DayBucket {
+  dayStart: number
+  total_ms: number
+}
+
 export function getAppHourlyToday(): HourBucket[] {
   const db = getDb()
   const dayStart = todayStart()
@@ -223,6 +228,51 @@ export function getAppHourlyToday(): HourBucket[] {
   return buckets
     .map((total_ms, hour) => ({ hour, total_ms }))
     .filter((b) => b.total_ms > 0)
+}
+
+export function getAppDailyForRange(startMs: number, endMs: number): DayBucket[] {
+  const db = getDb()
+  const now = Date.now()
+
+  const sessions = db
+    .prepare(
+      `SELECT start_time, COALESCE(end_time, ?) AS end_time
+       FROM app_sessions
+       WHERE start_time < ? AND (end_time IS NULL OR end_time > ?)
+       ORDER BY start_time`
+    )
+    .all(now, endMs, startMs) as { start_time: number; end_time: number }[]
+
+  // Merge overlapping intervals
+  const merged: { start: number; end: number }[] = []
+  for (const s of sessions) {
+    const start = Math.max(s.start_time, startMs)
+    const end = Math.min(Math.min(s.end_time, now), endMs)
+    if (start >= end) continue
+    if (merged.length === 0 || start > merged[merged.length - 1].end) {
+      merged.push({ start, end })
+    } else {
+      merged[merged.length - 1].end = Math.max(merged[merged.length - 1].end, end)
+    }
+  }
+
+  const dayMap = new Map<number, number>()
+  for (const interval of merged) {
+    let pos = interval.start
+    while (pos < interval.end) {
+      const d = new Date(pos)
+      d.setHours(0, 0, 0, 0)
+      const dayStart = d.getTime()
+      const dayEnd = dayStart + 86400000
+      const contrib = Math.min(interval.end, dayEnd) - pos
+      dayMap.set(dayStart, (dayMap.get(dayStart) ?? 0) + contrib)
+      pos = dayEnd
+    }
+  }
+
+  return Array.from(dayMap.entries())
+    .map(([dayStart, total_ms]) => ({ dayStart, total_ms }))
+    .sort((a, b) => a.dayStart - b.dayStart)
 }
 
 // ── Limits ────────────────────────────────────────────────────

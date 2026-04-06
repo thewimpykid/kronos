@@ -19,6 +19,9 @@ import { checkAndBlockApp, checkAndBlockSite, clearBlockCooldown } from './focus
 // Default idle threshold — 5 minutes of no mouse/keyboard = pause tracking
 const IDLE_THRESHOLD_SEC = 5 * 60
 
+// Processes that should never be logged — lock screen, screensaver, login UI
+const SKIP_PROCESSES = new Set(['lockapp', 'screensaver', 'logonui', 'winlogon'])
+
 const PS_SCRIPT_CONTENT = `
 Add-Type -TypeDefinition @"
 using System;
@@ -188,6 +191,13 @@ function handleIdle() {
 // ─── Core handler (called on each active window line) ─────────────────────────
 
 function handleTick(processName: string, title: string, url: string) {
+  // Skip lock screen / screensaver — close open sessions so this time isn't counted
+  if (SKIP_PROCESSES.has(processName.toLowerCase())) {
+    if (currentApp) { closeAppSession(currentApp.id); currentApp = null }
+    if (currentWeb) { closeWebSession(currentWeb.id); currentWeb = null }
+    return
+  }
+
   // ── App session ──────────────────────────────────────────────────────────
   if (currentApp?.processName !== processName) {
     if (currentApp) {
